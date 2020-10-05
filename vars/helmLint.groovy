@@ -11,7 +11,10 @@ void call(Map args = [:]) {
                     "-f ${valuesPath}/values.yaml",
                     "-f ${valuesPath}/values.${it}.yaml",
             ]
-            [(it): HelmCommandFactory.lint(path, options)]
+            def task = {
+                echo HelmCommandFactory.lint(path, options)
+            }
+            [(it): task]
         }
 
         parallel tasks
