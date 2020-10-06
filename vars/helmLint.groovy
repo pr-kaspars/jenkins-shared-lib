@@ -1,22 +1,32 @@
+import com.github.prkaspars.jenkins.ClusterConfig
 import com.github.prkaspars.jenkins.HelmCommandFactory
 
 void call(Map args = [:]) {
     String path = args['path'] as String
     String valuesPath = args['valuesPath'] ?: '.'
-    String[] profiles = args['profiles'] ?: []
+    List<ClusterConfig> clusters = args['clusters'] ?: [] as List<ClusterConfig>
 
-    stage('Helm lint') {
-        def tasks = profiles.collectEntries {
-            String[] options = [
-                    "-f ${valuesPath}/values.yaml",
-                    "-f ${valuesPath}/values.${it}.yaml",
-            ]
-            def task = {
-                echo HelmCommandFactory.lint(path, options)
+    def tasks = clusters
+            .findAll { it.enabled }
+            .collectEntries {
+                List<GString> valuesList = [
+                        "${valuesPath}/values.yaml",
+                        "${valuesPath}/values.${it.profile}.yaml",
+                        "${valuesPath}/values.${it.name}.yaml",
+                ]
+
+                def options = valuesList
+                        .findAll {
+                            def file = new File("${valuesPath}/values.${it}.yaml")
+                            file.exists() && file.canRead()
+                        }
+                        .collect { "-f ${it}" }
+
+                def task = {
+                    echo HelmCommandFactory.lint(path, options)
+                }
+                [("${it.name}:${it.profile}"): task]
             }
-            [(it): task]
-        }
 
-        parallel tasks
-    }
+    parallel tasks
 }

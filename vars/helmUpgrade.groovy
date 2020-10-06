@@ -1,3 +1,7 @@
+import com.github.prkaspars.jenkins.ClusterConfig
+
 void call(Map args = [:]) {
-    def clusters = args['clusters']
+    List<ClusterConfig> clusters = args['clusters'] ?: [] as List<ClusterConfig>
+
+
 }
