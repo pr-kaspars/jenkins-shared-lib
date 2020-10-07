@@ -2,7 +2,7 @@ import com.github.prkaspars.jenkins.ClusterConfig
 import com.github.prkaspars.jenkins.HelmCommandFactory
 
 void call(Map args = [:]) {
-    String path = args['path'] as String
+    String path = args['path'] ?: 'charts'
     String valuesPath = args['valuesPath'] ?: '.'
     List<ClusterConfig> clusters = (args['clusters'] ?: []).collect { new ClusterConfig(it) }
 
