@@ -4,7 +4,7 @@ import com.github.prkaspars.jenkins.HelmCommandFactory
 void call(Map args = [:]) {
     String path = args['path'] as String
     String valuesPath = args['valuesPath'] ?: '.'
-    List<ClusterConfig> clusters = args['clusters'] ?: [] as List<ClusterConfig>
+    List<ClusterConfig> clusters = (args['clusters'] ?: []).collect { new ClusterConfig(it) }
 
     def tasks = clusters
             .findAll { it.enabled }
