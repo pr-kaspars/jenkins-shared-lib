@@ -7,9 +7,9 @@ void call(Map args = [:]) {
     List<ClusterConfig> clusters = (args['clusters'] ?: []).collect { new ClusterConfig(it) }
 
     echo '==='
-    echo args
-    echo args['clusters']
-    echo clusters
+    echo "${args}"
+    echo "${args['clusters']}"
+    echo "${clusters}"
     echo '==='
 
     def tasks = clusters
