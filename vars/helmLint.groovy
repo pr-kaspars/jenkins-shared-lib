@@ -6,6 +6,12 @@ void call(Map args = [:]) {
     String valuesPath = args['valuesPath'] ?: '.'
     List<ClusterConfig> clusters = (args['clusters'] ?: []).collect { new ClusterConfig(it) }
 
+    echo '==='
+    echo args
+    echo args['clusters']
+    echo clusters
+    echo '==='
+
     def tasks = clusters
             .findAll { it.enabled }
             .collectEntries {
