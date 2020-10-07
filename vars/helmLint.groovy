@@ -16,10 +16,7 @@ void call(Map args = [:]) {
                 ]
 
                 def options = valuesList
-                        .findAll {
-                            def file = new File("${valuesPath}/values.${it}.yaml")
-                            file.exists() && file.canRead()
-                        }
+                        .findAll { new File("${valuesPath}/values.${it}.yaml").canRead() }
                         .collect { "-f ${it}" }
 
                 def task = {
