@@ -2,27 +2,32 @@ import com.github.prkaspars.jenkins.ClusterConfig
 import com.github.prkaspars.jenkins.HelmCommandFactory
 
 void call(Map args = [:]) {
-    String path = args['path'] ?: 'charts'
-    String valuesPath = args['valuesPath'] ?: '.'
+    String chartDirectory = args['chartDirectory'] ?: 'charts'
+    String valuesDirectory = args['valuesDirectory'] ?: '.'
     List<ClusterConfig> clusters = (args['clusters'] ?: []).collect { new ClusterConfig(it) }
 
-    def tasks = clusters
-            .findAll { it.enabled }
-            .collectEntries {
-                List<GString> valuesList = [
-                        "${valuesPath}/values.yaml",
-                        "${valuesPath}/values.${it.profile}.yaml",
-                        "${valuesPath}/values.${it.name}.yaml",
-                ]
+    Closure<List<GString>> createValuesList = { it ->
+        [
+                "${valuesDirectory}/values.yaml",
+                "${valuesDirectory}/values.${it.profile}.yaml",
+                "${valuesDirectory}/values.${it.name}.yaml",
+        ]
+    }
 
-                def options = valuesList
-                        .findAll { new File("${valuesPath}/values.${it}.yaml").canRead() }
-                        .collect { "-f ${it}" }
+    def tasks = clusters
+            .collectEntries {
+                def options = createValuesList(it)
+                        .findAll { new File("${valuesDirectory}/values.${it}.yaml").canRead() }
+                        .collect { "--values ${it}" }
+                        .collect { it.toString() }
 
                 def task = {
-                    echo HelmCommandFactory.lint(path, options)
+                    echo HelmCommandFactory.lint(chartDirectory, options)
                 }
-                [("${it.name}:${it.profile}"): task]
+
+                def key = "${it.name}:${it.profile}".toString()
+
+                [(key): task]
             }
 
     parallel tasks

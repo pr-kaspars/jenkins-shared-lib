@@ -6,7 +6,7 @@ class HelmCommandFactory {
         return (['helm', 'upgrade', release, chart] + flags).join(' ')
     }
 
-    static String lint(String path, Iterable<String> flags) {
-        return (['helm', 'lint', path] + flags).join(' ')
+    static String lint(String chartDirectory, Iterable<String> flags) {
+        return (['helm', 'lint', chartDirectory] + flags).join(' ')
     }
 }
