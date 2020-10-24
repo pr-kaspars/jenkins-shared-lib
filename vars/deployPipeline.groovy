@@ -41,7 +41,7 @@ def deployStages(clusters) {
 
 def deployStage(cluster) {
     stage(cluster) {
-        steps {
+        script {
             echo "deploy ${cluster}"
         }
     }
