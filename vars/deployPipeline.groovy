@@ -1,4 +1,8 @@
 void call(Map args = [:]) {
+    List<String> clusters = [
+            "foo", "bar", "baz", "qux"
+    ]
+
     // Pipeline
     pipeline {
         agent any
@@ -10,8 +14,8 @@ void call(Map args = [:]) {
         stages {
 
             stage('Deploy') {
-                steps {
-                    echo "Deploy"
+                stages {
+                    deployStages(clusters)
                 }
             }
 
@@ -25,6 +29,18 @@ void call(Map args = [:]) {
                     echo 'Rollback'
                 }
             }
+        }
+    }
+}
+
+def deployStages(clusters) {
+    clusters.each { deployStage(it) }
+}
+
+def deployStage(cluster) {
+    stage(cluster) {
+        steps {
+            echo "deploy ${cluster}"
         }
     }
 }
