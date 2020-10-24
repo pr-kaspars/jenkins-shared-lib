@@ -14,8 +14,10 @@ void call(Map args = [:]) {
         stages {
 
             stage('Deploy') {
-                stages {
-                    deployStages(clusters)
+                steps {
+                    script {
+                        deployStages(clusters)
+                    }
                 }
             }
 
