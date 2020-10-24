@@ -35,12 +35,17 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(clusters) {
+def deployStages(List<String> clusters) {
     clusters.each { deployStage(it) }
 }
 
-def deployStage(cluster) {
+def deployStage(String cluster) {
     stage(cluster) {
+        when {
+            expression {
+                return cluster != "bar"
+            }
+        }
         script {
             echo "deploy ${cluster}"
         }
