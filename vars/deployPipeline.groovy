@@ -3,6 +3,8 @@ void call(Map args = [:]) {
             "foo", "bar", "baz", "qux"
     ]
 
+    echo "${this}"
+
     // Pipeline
     pipeline {
         agent any
@@ -40,16 +42,9 @@ def deployStages(List<String> clusters) {
 }
 
 def deployStage(String cluster) {
-    node {
-        stage(cluster) {
-            when {
-                expression {
-                    return cluster != "bar"
-                }
-            }
-            script {
-                echo "deploy ${cluster}"
-            }
+    stage(cluster) {
+        script {
+            echo "deploy ${cluster}"
         }
     }
 }
