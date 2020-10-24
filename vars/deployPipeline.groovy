@@ -40,14 +40,16 @@ def deployStages(List<String> clusters) {
 }
 
 def deployStage(String cluster) {
-    stage(cluster) {
-        when {
-            expression {
-                return cluster != "bar"
+    node {
+        stage(cluster) {
+            when {
+                expression {
+                    return cluster != "bar"
+                }
             }
-        }
-        script {
-            echo "deploy ${cluster}"
+            script {
+                echo "deploy ${cluster}"
+            }
         }
     }
 }
