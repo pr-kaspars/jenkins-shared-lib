@@ -34,7 +34,7 @@ void call(Map args = [:]) {
 
             stage('Deploy') {
                 stages {
-                    deployStages(clusters, params.PROFILE, postDeploy)
+                    deployStages(this, clusters, params.PROFILE, postDeploy)
                 }
             }
 
@@ -52,8 +52,10 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(List<Cluster> clusters, String profile, Closure postDeploy) {
-    return clusters.collect { deployStage(it, profile, postDeploy) }
+def deployStages(stages, List<Cluster> clusters, String profile, Closure postDeploy) {
+    return clusters.each {
+        stages.deployStage(it, profile, postDeploy)
+    }
 }
 
 def deployStage(Cluster cluster, String profile, Closure postDeploy) {
