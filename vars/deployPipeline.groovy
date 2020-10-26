@@ -63,9 +63,10 @@ def deployStage(Cluster cluster, String profile, Closure postDeploy) {
         script {
             if (cluster.profile != profile) {
                 Utils.markStageSkippedForConditional(cluster.name)
+            } else {
+                echo "deploy ${cluster.name}"
+                postDeploy(cluster)
             }
-            echo "deploy ${cluster.name}"
         }
-        postDeploy(cluster)
     }
 }
