@@ -53,7 +53,7 @@ void call(Map args = [:]) {
 def deployStages(List<Cluster> clusters) {
     Comparator<Cluster> comparator = { a, b ->
         int p = (a.profile <=> b.profile)
-        (p == 0) ? (a.priority <=> b.priority) : p
+        return (p == 0) ? (a.priority <=> b.priority) : p
     }
 
     clusters.stream().sorted(comparator).each { deployStage(it) }
