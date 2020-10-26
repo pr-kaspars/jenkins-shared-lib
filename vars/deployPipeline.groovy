@@ -18,6 +18,10 @@ void call(Map args = [:]) {
                 return obj
             }
 
+    Closure postDeploy = { Cluster cluster ->
+        echo "Post Deploy: ${cluster.name}"
+    }
+
     // Pipeline
     pipeline {
         agent any
@@ -31,7 +35,7 @@ void call(Map args = [:]) {
             stage('Deploy') {
                 steps {
                     script {
-                        deployStages(clusters, params.PROFILE)
+                        deployStages(clusters, params.PROFILE, postDeploy)
                     }
                 }
             }
@@ -50,16 +54,11 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(List<Cluster> clusters, String profile) {
-    Comparator<Cluster> comparator = { a, b ->
-        int p = (a.profile <=> b.profile)
-        return (p == 0) ? (a.priority <=> b.priority) : p
-    }
-
-    clusters.each { deployStage(it, profile) }
+def deployStages(List<Cluster> clusters, String profile, Closure postDeploy) {
+    clusters.each { deployStage(it, profile, postDeploy) }
 }
 
-def deployStage(Cluster cluster, String profile) {
+def deployStage(Cluster cluster, String profile, Closure postDeploy) {
     stage(cluster.name) {
         script {
             if (cluster.profile != profile) {
@@ -67,5 +66,6 @@ def deployStage(Cluster cluster, String profile) {
             }
             echo "deploy ${cluster.name}"
         }
+        postDeploy(cluster)
     }
 }
