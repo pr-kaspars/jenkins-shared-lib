@@ -58,9 +58,9 @@ def deployStage(Cluster cluster) {
     stage(cluster.name) {
         script {
             if (cluster.name == 'baz') (
-                    Utils.markStageSkippedForConditional(cluster)
+                    Utils.markStageSkippedForConditional(cluster.name)
             )
-            echo "deploy ${cluster}"
+            echo "deploy ${cluster.name}"
         }
     }
 }
