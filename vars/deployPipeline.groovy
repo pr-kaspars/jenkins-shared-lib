@@ -46,8 +46,8 @@ def deployStages(List<String> clusters) {
 def deployStage(String cluster) {
     stage(cluster) {
         script {
-            if (
-                Utils.markStageSkippedForConditional(cluster == 'baz')
+            if (cluster == 'baz') (
+                Utils.markStageSkippedForConditional(cluster)
             )
             echo "deploy ${cluster}"
         }
