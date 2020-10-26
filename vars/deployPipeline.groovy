@@ -31,7 +31,7 @@ void call(Map args = [:]) {
             stage('Deploy') {
                 steps {
                     script {
-                        deployStages(clusters)
+                        deployStages(clusters, params.PROFILE)
                     }
                 }
             }
@@ -50,19 +50,19 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(List<Cluster> clusters) {
+def deployStages(List<Cluster> clusters, String profile) {
     Comparator<Cluster> comparator = { a, b ->
         int p = (a.profile <=> b.profile)
         return (p == 0) ? (a.priority <=> b.priority) : p
     }
 
-    clusters.each { deployStage(it) }
+    clusters.each { deployStage(it, profile) }
 }
 
-def deployStage(Cluster cluster) {
+def deployStage(Cluster cluster, String profile) {
     stage(cluster.name) {
         script {
-            if (cluster.name == 'baz') {
+            if (cluster.profile == profile) {
                 Utils.markStageSkippedForConditional(cluster.name)
             }
             echo "deploy ${cluster.name}"
