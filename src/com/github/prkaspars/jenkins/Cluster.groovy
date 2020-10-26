@@ -5,6 +5,7 @@ class Cluster {
     String name
     String namespace
     String profile
+    int priority
 
     String toString() {
         return name
