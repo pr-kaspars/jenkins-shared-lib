@@ -51,12 +51,11 @@ void call(Map args = [:]) {
 }
 
 def deployStages(List<Cluster> clusters) {
-    clusters
-            .sort({ a, b ->
-                int p = (a.profile <=> b.profile)
-                (p == 0) ? (a.priority <=> b.priority) : p
-            })
-            .each { deployStage(it) }
+    Comparator<Cluster> comparator = { a, b ->
+        int p = (a.profile <=> b.profile)
+        (p == 0) ? (a.priority <=> b.priority) : p
+    }
+    clusters.sort(comparator).each { deployStage(it) }
 }
 
 def deployStage(Cluster cluster) {
