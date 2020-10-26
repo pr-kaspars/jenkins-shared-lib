@@ -17,7 +17,7 @@ void call(Map args = [:]) {
                 cluster.each { key, value -> obj."${key}" = value }
                 obj
             }
-            .sort {
+            .sort { a, b ->
                 int p = (a.profile <=> b.profile)
                 (p == 0) ? (a.priority <=> b.priority) : p
             }
