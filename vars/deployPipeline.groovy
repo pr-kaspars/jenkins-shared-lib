@@ -1,3 +1,5 @@
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
+
 void call(Map args = [:]) {
     List<String> clusters = [
             "foo", "bar", "baz", "qux"
@@ -44,6 +46,9 @@ def deployStages(List<String> clusters) {
 def deployStage(String cluster) {
     stage(cluster) {
         script {
+            if (
+                Utils.markStageSkippedForConditional(cluster == 'baz')
+            )
             echo "deploy ${cluster}"
         }
     }
