@@ -13,11 +13,9 @@ void call(Map args = [:]) {
     List<Cluster> clusters = args.get("clusters", [])
             .collect { clusterDefaults + it }
             .collect { cluster ->
-                {
-                    Cluster obj = new Cluster()
-                    cluster.each { key, value -> obj."${key}" = value }
-                    return obj
-                }
+                Cluster obj = new Cluster()
+                cluster.each { key, value -> obj."${key}" = value }
+                return obj
             }
 
     // Pipeline
