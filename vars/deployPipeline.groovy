@@ -1,11 +1,24 @@
+import com.github.prkaspars.jenkins.Cluster
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 
 void call(Map args = [:]) {
-    List<String> clusters = [
-            "foo", "bar", "baz", "qux"
+    String namespace = args["namespace"]
+
+    Map<String, Object> clusterDefaults = [
+            "enabled"  : true,
+            "namespace": namespace,
+            "priority" : 1,
     ]
 
-    echo "${this}"
+    List<Cluster> clusters = args.get("clusters", [])
+            .collect { clusterDefaults + it }
+            .collect { cluster ->
+                {
+                    Cluster obj = new Cluster()
+                    cluster.each { key, value -> obj."${key}" = value }
+                    return obj
+                }
+            }
 
     // Pipeline
     pipeline {
@@ -39,15 +52,15 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(List<String> clusters) {
+def deployStages(List<Cluster> clusters) {
     clusters.each { deployStage(it) }
 }
 
-def deployStage(String cluster) {
-    stage(cluster) {
+def deployStage(Cluster cluster) {
+    stage(cluster.toString()) {
         script {
-            if (cluster == 'baz') (
-                Utils.markStageSkippedForConditional(cluster)
+            if (cluster.name == 'baz') (
+                    Utils.markStageSkippedForConditional(cluster)
             )
             echo "deploy ${cluster}"
         }
