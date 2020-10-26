@@ -55,7 +55,8 @@ def deployStages(List<Cluster> clusters) {
         int p = (a.profile <=> b.profile)
         (p == 0) ? (a.priority <=> b.priority) : p
     }
-    clusters.sort(comparator).each { deployStage(it) }
+    clusters.sort(comparator)
+    clusters.each { deployStage(it) }
 }
 
 def deployStage(Cluster cluster) {
