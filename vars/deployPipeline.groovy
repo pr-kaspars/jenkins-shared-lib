@@ -15,7 +15,11 @@ void call(Map args = [:]) {
             .collect { cluster ->
                 Cluster obj = new Cluster()
                 cluster.each { key, value -> obj."${key}" = value }
-                return obj
+                obj
+            }
+            .sort {
+                int p = (a.profile <=> b.profile)
+                (p == 0) ? (a.priority <=> b.priority) : p
             }
 
     // Pipeline
@@ -51,20 +55,15 @@ void call(Map args = [:]) {
 }
 
 def deployStages(List<Cluster> clusters) {
-    Comparator<Cluster> comparator = { a, b ->
-        int p = (a.profile <=> b.profile)
-        (p == 0) ? (a.priority <=> b.priority) : p
-    }
-    clusters.sort(comparator)
     clusters.each { deployStage(it) }
 }
 
 def deployStage(Cluster cluster) {
     stage(cluster.name) {
         script {
-            if (cluster.name == 'baz') (
-                    Utils.markStageSkippedForConditional(cluster.name)
-            )
+            if (cluster.name == 'baz') {
+                Utils.markStageSkippedForConditional(cluster.name)
+            }
             echo "deploy ${cluster.name}"
         }
     }
