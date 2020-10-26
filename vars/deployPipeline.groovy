@@ -4,7 +4,7 @@ import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 void call(Map args = [:]) {
     String namespace = args["namespace"]
 
-    Map<String, Object> clusterDefaults = [
+    Map<String, Serializable> clusterDefaults = [
             "enabled"  : true,
             "namespace": namespace,
             "priority" : 1,
@@ -51,7 +51,12 @@ void call(Map args = [:]) {
 }
 
 def deployStages(List<Cluster> clusters) {
-    clusters.each { deployStage(it) }
+    clusters
+            .sort({ a, b ->
+                int p = (a.profile <=> b.profile)
+                (p == 0) ? (a.priority <=> b.priority) : p
+            })
+            .each { deployStage(it) }
 }
 
 def deployStage(Cluster cluster) {
