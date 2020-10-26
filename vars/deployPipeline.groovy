@@ -15,11 +15,7 @@ void call(Map args = [:]) {
             .collect { cluster ->
                 Cluster obj = new Cluster()
                 cluster.each { key, value -> obj."${key}" = value }
-                obj
-            }
-            .sort { a, b ->
-                int p = (a.profile <=> b.profile)
-                (p == 0) ? (a.priority <=> b.priority) : p
+                return obj
             }
 
     // Pipeline
@@ -55,7 +51,12 @@ void call(Map args = [:]) {
 }
 
 def deployStages(List<Cluster> clusters) {
-    clusters.each { deployStage(it) }
+    Comparator<Cluster> comparator = { a, b ->
+        int p = (a.profile <=> b.profile)
+        (p == 0) ? (a.priority <=> b.priority) : p
+    }
+
+    clusters.stream().sorted(comparator).each { deployStage(it) }
 }
 
 def deployStage(Cluster cluster) {
