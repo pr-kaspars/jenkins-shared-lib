@@ -56,7 +56,9 @@ def deployStages(List<Cluster> clusters) {
         return (p == 0) ? (a.priority <=> b.priority) : p
     }
 
-    clusters.stream().sorted(comparator).each { deployStage(it) }
+    clusters.stream()
+            .sorted(comparator)
+            .each { it -> deployStage(it) }
 }
 
 def deployStage(Cluster cluster) {
