@@ -55,7 +55,7 @@ def deployStages(List<Cluster> clusters) {
 }
 
 def deployStage(Cluster cluster) {
-    stage(cluster.toString()) {
+    stage(cluster.name) {
         script {
             if (cluster.name == 'baz') (
                     Utils.markStageSkippedForConditional(cluster)
