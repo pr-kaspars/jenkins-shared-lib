@@ -30,8 +30,10 @@ void call(Map args = [:]) {
         stages {
 
             stage('Deploy') {
-                scr {
-                    deployStages(clusters, params.PROFILE, postDeploy)
+                steps {
+                    script {
+                        deployStages(clusters, params.PROFILE, postDeploy)
+                    }
                 }
             }
 
@@ -54,17 +56,15 @@ def deployStages(List<Cluster> clusters, String profile, Closure postDeploy) {
 }
 
 def deployStage(Cluster cluster, String profile, Closure postDeploy) {
-    return {
-        stage(cluster.name) {
-            script {
-                if (cluster.profile != profile) {
-                    log.info "Stage '${cluster.name}' skipped"
-                    Utils.markStageSkippedForConditional(cluster.name)
-                } else {
-                    log.info "deploy ${cluster.name}"
-                    if (postDeploy != null) {
-                        postDeploy(cluster)
-                    }
+    stage(cluster.name) {
+        script {
+            if (cluster.profile != profile) {
+                log.info "Stage '${cluster.name}' skipped"
+                Utils.markStageSkippedForConditional(cluster.name)
+            } else {
+                log.info "deploy ${cluster.name}"
+                if (postDeploy != null) {
+                    postDeploy(cluster)
                 }
             }
         }
