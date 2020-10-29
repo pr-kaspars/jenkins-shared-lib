@@ -3,6 +3,7 @@ import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 
 void call(Map args = [:]) {
     String namespace = args["namespace"]
+    Closure postDeploy = args["postDeploy"]
 
     Map<String, Serializable> clusterDefaults = [
             "enabled"  : true,
@@ -18,10 +19,6 @@ void call(Map args = [:]) {
                 return obj
             }
 
-    Closure postDeploy = { Cluster cluster ->
-        echo "Post Deploy: ${cluster.name}"
-    }
-
     // Pipeline
     pipeline {
         agent any
@@ -33,8 +30,8 @@ void call(Map args = [:]) {
         stages {
 
             stage('Deploy') {
-                stages {
-                    deployStages(this, clusters, params.PROFILE, postDeploy)
+                scr {
+                    deployStages(clusters, params.PROFILE, postDeploy)
                 }
             }
 
@@ -52,10 +49,8 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(stages, List<Cluster> clusters, String profile, Closure postDeploy) {
-    return clusters.each {
-        stages.deployStage(it, profile, postDeploy)
-    }
+def deployStages(List<Cluster> clusters, String profile, Closure postDeploy) {
+    return clusters.each { deployStage(it, profile, postDeploy) }
 }
 
 def deployStage(Cluster cluster, String profile, Closure postDeploy) {
@@ -67,7 +62,9 @@ def deployStage(Cluster cluster, String profile, Closure postDeploy) {
                     Utils.markStageSkippedForConditional(cluster.name)
                 } else {
                     log.info "deploy ${cluster.name}"
-                    postDeploy(cluster)
+                    if (postDeploy != null) {
+                        postDeploy(cluster)
+                    }
                 }
             }
         }
