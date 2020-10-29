@@ -2,24 +2,40 @@ import com.github.prkaspars.jenkins.Cluster
 import com.github.prkaspars.jenkins.HelmCommandFactory
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 
-void call(Map args = [:]) {
-    String chartsDirectory = args.get("chartsDirectory", "charts")
-    String namespace = args["namespace"]
-    Closure postDeploy = args["postDeploy"]
+import java.nio.file.Path
+import java.nio.file.Paths
 
-    Map<String, Serializable> clusterDefaults = [
+void call(Map args = [:]) {
+    Closure<Iterable<String>> defaultCreateValues = { Cluster cluster ->
+        [
+                "values.yaml",
+                "values.${cluster.profile}.yaml",
+                "values.${cluster.name}.yaml"
+        ].collect { it.toString() }
+    }
+
+
+    String baseDirectory = args.get("baseDirectory", ".")
+
+    String chartsDirectory = args.get("chartsDirectory", "charts")
+    String chartName = args["chartName"]
+
+    String namespace = args["namespace"]
+
+    Closure postDeploy = args["postDeploy"]
+    Closure<Iterable<String>> createValues = args.get("createValues", defaultCreateValues)
+
+    Map<String, Object> clusterDefaults = [
             "enabled"  : true,
             "namespace": namespace,
             "priority" : 1,
     ]
 
     List<Cluster> clusters = args.get("clusters", [])
-            .collect { clusterDefaults + it }
-            .collect { cluster ->
-                Cluster obj = new Cluster()
-                cluster.each { key, value -> obj."${key}" = value }
-                return obj
-            }
+            .collect { (clusterDefaults + it) as Map<String, Object> }
+            .collect { createClusterObj() }
+
+    Path basePath = Paths.get(baseDirectory, chartsDirectory, chartName)
 
     // Pipeline
     pipeline {
@@ -34,12 +50,12 @@ void call(Map args = [:]) {
             stage('Helm Lint') {
                 steps {
                     script {
-                        clusters.each {
-                            List<String> flags = [
-                                    "-f values.yaml",
-                                    "-f values.${it.profile}.yaml",
-                                    "-f values.${it.name}.yaml",
-                            ].collect { it.toString() }
+                        clusters.each { Cluster cluster ->
+                            List<String> flags = createValues(cluster)
+                                    .collect { basePath.resolve(it.toString()).toString() }
+//                                    .findAll { fileExists(it) }
+                                    .collect { "--values ${it}".toString() }
+
                             echo HelmCommandFactory.lint(chartsDirectory, flags)
                         }
                     }
@@ -66,6 +82,12 @@ void call(Map args = [:]) {
             }
         }
     }
+}
+
+def createClusterObj(Map<String, Object> fieldValues) {
+    Cluster cluster = new Cluster()
+    fieldValues.each { field, value -> cluster."${field}" = value }
+    return cluster
 }
 
 def deployStage(Cluster cluster, String profile, Closure postDeploy) {
