@@ -1,7 +1,9 @@
 import com.github.prkaspars.jenkins.Cluster
+import com.github.prkaspars.jenkins.HelmCommandFactory
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 
 void call(Map args = [:]) {
+    String chartsDirectory = args.get("chartsDirectory", "charts")
     String namespace = args["namespace"]
     Closure postDeploy = args["postDeploy"]
 
@@ -29,10 +31,25 @@ void call(Map args = [:]) {
 
         stages {
 
+            stage('Helm Lint') {
+                steps {
+                    script {
+                        clusters.each {
+                            List<String> flags = [
+                                    "-f values.yaml",
+                                    "-f values.${it.profile}.yaml",
+                                    "-f values.${it.name}.yaml",
+                            ].collect { it.toString() }
+                            echo HelmCommandFactory.lint(chartsDirectory, flags)
+                        }
+                    }
+                }
+            }
+
             stage('Deploy') {
                 steps {
                     script {
-                        deployStages(clusters, params.PROFILE, postDeploy)
+                        clusters.each { deployStage(it, params.PROFILE, postDeploy) }
                     }
                 }
             }
@@ -51,14 +68,10 @@ void call(Map args = [:]) {
     }
 }
 
-def deployStages(List<Cluster> clusters, String profile, Closure postDeploy) {
-    return clusters.each { deployStage(it, profile, postDeploy) }
-}
-
 def deployStage(Cluster cluster, String profile, Closure postDeploy) {
     stage(cluster.name) {
         script {
-            if (cluster.profile != profile) {
+            if (cluster.profile != profile || !cluster.enabled) {
                 log.info "Stage '${cluster.name}' skipped"
                 Utils.markStageSkippedForConditional(cluster.name)
             } else {
